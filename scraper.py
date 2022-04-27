@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 
-youtubeTrendingVideo = 'https://m.youtube.com/feed/trending?bp=6gQJRkVleHBsb3Jl'
+amazonProductList = 'https://www.amazon.de/s?me=A1J99ZSJJL0INS'
 
 # create function which return the driver
 def getDriver():
@@ -19,39 +19,40 @@ def getDriver():
   return driver
 
 # get videos
-def getVideos(driver):
+def getProducts(driver):
   # vedioDivClass = 'style-scope ytd-video-renderer'
   # videoDivs = driver.find_elements_by_class_name(
   #   vedioDivClass
   # )
-  vedioDivTag = 'ytd-video-renderer'
-  driver.get(youtubeTrendingVideo)
-  videos = driver.find_elements(By.TAG_NAME,
-    vedioDivTag
+  vedioDivCLass = 's-result-item s-asin sg-col-0-of-12 sg-col-16-of-20 sg-col s-widget-spacing-small sg-col-12-of-16'
+  driver.get(amazonProductList)
+  products = driver.find_elements(By.CLASS_NAME,
+    vedioDivCLass
   )
-  return videos
+  return products
 
-def parseVideo(video):
-  videoTag = video.find_element(By.ID, 'video-title')
-  videoTitle = videoTag.text
-  url = videoTag.get_attribute('href')
-  print('Title', videoTitle)
-  print('URL', url)
+def parseProduct(product):
+  print(product)
+  productTag = product.find_element(By.TAG_NAME, 'span')
+  productTitle = productTag.text
+  # url = videoTag.get_attribute('href')
+  print('Title', productTitle)
+  # print('URL', url)
   return {
-    'title': videoTitle,
-    'url': url
+    'title': productTitle,
+    # 'url': url
   }
 
 if __name__ == "__main__":
   print('Creating driver')
   driver = getDriver()
 
-  print('fetching trending videos')
-  videos = getVideos(driver)
-  print(f'Found {len(videos)} videos', driver.title)
-  print('Parsing top 2 videos')
-  # title,url, thumbnail_url, channel, views, upload,     description
-  vedioData = [parseVideo(video) for video in videos[:2]]
+  print('fetching amazon Products List')
+  products = getProducts(driver)
+  print(f'Found {len(products)} products', driver.title)
+  print('Parsing Products')
+  # Get Product title ,Link to the product, Price, Link to the main product image, All bullet points describing the product, Product rating (how many stars product has)
+  vedioData = [parseProduct(product) for product in products]
   print(vedioData)
 
   
