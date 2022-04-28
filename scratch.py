@@ -2,12 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 
 
-youtubeTrendingVideo = 'https://www.youtube.com/feed/trending?bp=6gQJRkVleHBsb3Jl'
+youtubeTrendingVideo = 'https://www.amazon.de/s?me=A1J99ZSJJL0INS'
 
 response = requests.get(youtubeTrendingVideo)
 print('Status code', response.status_code)
 
-with open('trending.html', 'w') as f:
+with open('website.html', 'w') as f:
   f.write(response.text)
 
 
