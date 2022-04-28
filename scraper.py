@@ -6,7 +6,6 @@ from selenium.webdriver.chrome.options import Options
 # to eleminate worning
 from selenium.webdriver.common.by import By
 
-
 amazonProductList = 'https://www.amazon.de/s?me=A1J99ZSJJL0INS'
 
 # create function which return the driver
@@ -22,7 +21,7 @@ def getDriver():
   return driver
 
 # get videos
-def getProducts(driver, i):
+def getProducts(driver):
   # vedioDivClass = 'style-scope ytd-video-renderer'
   # videoDivs = driver.find_elements_by_class_name(
   #   vedioDivClass
@@ -43,53 +42,73 @@ def getProducts(driver, i):
 
 def parseProduct(product):
   # print(product)
-  productTag = product.find_element(By.CLASS_NAME, 'a-text-normal')
-  productPriceClass = product.find_element(By.CLASS_NAME, 'a-price')
-  imageLinkClass = product.find_element(By.CLASS_NAME, 's-no-outline')
-  ratingClass = product.find_element(By.XPATH, '//*[@id="search"]/div[1]/div[1]/div/span[3]/div[2]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/div/span[1]/span/a/i[1]/span')
-  productPrice = productPriceClass.text
-  productTitle = productTag.text
-  rating = ratingClass.get_attribute("innerHTML")
-  url = productTag.get_attribute('href')
-  imageUrl = imageLinkClass.get_attribute('href')
-  print('Title', productTitle)
-  print('URL', url)
-  return {
-    'title': productTitle,
-    'url': url,
-    'price': productPrice,
-    'imageUrl': imageUrl,
-    'rating': rating
-  }
+  if (product.find_element(By.CLASS_NAME, 'a-text-normal')):
+    productTag = product.find_element(By.CLASS_NAME, 'a-text-normal')
+    productPriceClass = product.find_element(By.CLASS_NAME, 'a-price')
+    imageLinkClass = product.find_element(By.CLASS_NAME, 's-no-outline')
+    ratingClass = product.find_element(By.XPATH, '//*[@id="search"]/div[1]/div[1]/div/span[3]/div[2]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/div/span[1]/span/a/i[1]/span')
+    productPrice = productPriceClass.text
+    productTitle = productTag.text
+    rating = ratingClass.get_attribute("innerHTML")
+    url = productTag.get_attribute('href')
+    imageUrl = imageLinkClass.get_attribute('href')
+    print('Title', productTitle)
+    print('URL', url)
+    return {
+      'title': productTitle,
+      'url': url,
+      'price': productPrice,
+      'imageUrl': imageUrl,
+      'rating': rating
+    }
+  else:
+    return {}
 
 def repeat():
-  i=1
-  products = driver.find_elements(By.XPATH,f"//div[@data-index='1']")
-  while (driver.find_elements(By.XPATH,f"//div[@data-index='{i}']")):
-    # print(f"//div[@data-index='{i}']")
+  i=2
+  products = driver.find_elements(By.XPATH,f'//*[@id="search"]/div[1]/div[1]/div/span[3]/div[2]/div[2]/div')
+  productData = [parseProduct(product) for product in products]
+  print(productData)
+  print('save to CSV file')
+  # create a data frame
+  productsDf1 = pd.DataFrame(productData)
+  i+=1
+  while (driver.find_elements(By.XPATH,f'//*[@id="search"]/div[1]/div[1]/div/span[3]/div[2]/div[{i}]/div')):
+    print(f"//div[@data-index='{i}']")
     # vedioDivCLass = f'MAIN-SEARCH_RESULTS-{i}'
-    # products = driver.find_elements(By.ID,
-    #   vedioDivCLass
-    # )
-    # products = driver.find_elements(By.XPATH,f"//div[@data-index='{i}']")
-    # i+=1
+    products = driver.find_elements(By.XPATH,f'//*[@id="search"]/div[1]/div[1]/div/span[3]/div[2]/div[{i}]/div')
+    productData = [parseProduct(product) for product in products]
+    print(productData)
+    print('save to CSV file')
+    # create a data frame
+    productsDf = productsDf1.append(pd.DataFrame(productData))
+    # productsDf1.append(productsDf)
+    print(productsDf)
+    # save to CSV
+    productsDf.to_csv('products.csv', index=None)
+    i+=1
+    
+  return products
+
 
 if __name__ == "__main__":
   print('Creating driver')
   driver = getDriver()
 
   print('fetching amazon Products List')
-  products = getProducts(driver,1)
+  products = getProducts(driver)
   print(f'Found {len(products)} products', driver.title)
   print('Parsing Products')
   # Get Product title ,Link to the product, Price, Link to the main product image, All bullet points describing the product, Product rating (how many stars product has)
   productData = [parseProduct(product) for product in products]
   print(productData)
-  print('save to CSV file')
-  # create a data frame
-  productsDf = pd.DataFrame(productData)
-  print(productsDf)
-  # save to CSV
-  productsDf.to_csv('products.csv', index=None)
+  print('call repeat')
+  repeat = repeat()
+  # print('save to CSV file')
+  # # create a data frame
+  # productsDf = pd.DataFrame(productData)
+  # print(productsDf)
+  # # save to CSV
+  # productsDf.to_csv('products.csv', index=None)
 
   
